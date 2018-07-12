@@ -11,13 +11,13 @@ class MyProvider extends React.Component {
     super(props);
     this.state = {
       generic: {},
-      gps: {},
-      vehicle: [],
-      driver: [],
-      trip: [],
+      // gps: {},
+      // vehicle: [],
+      // driver: [],
+      // trip: [],
       currentStep: 0,
       stepCount: "",
-      stepChanged: false,
+      // stepChanged: false,
       steps: [],
       disableSubsteps: true,
       disableApply: true
@@ -30,21 +30,17 @@ class MyProvider extends React.Component {
       <MyContext.Provider
         value={{
           state: this.state,
-          gpsAdd: gpsContext => this.setState({ gps: gpsContext }),
-          vehicleAdd: vehicleContext =>
-            this.setState({ vehicle: vehicleContext }),
-          driverAdd: driverContext => this.setState({ driver: driverContext }),
-          tripAdd: tripContext => this.setState({ trip: tripContext }),
+          // gpsAdd: gpsContext => this.setState({ gps: gpsContext }),
+          // vehicleAdd: vehicleContext =>
+          //   this.setState({ vehicle: vehicleContext }),
+          // driverAdd: driverContext => this.setState({ driver: driverContext }),
+          // tripAdd: tripContext => this.setState({ trip: tripContext }),
           nextStep: () => this.setState({ currentStep: currentStep + 1 }),
           prevStep: () => this.setState({ currentStep: currentStep - 1 }),
-          setStepCount: stepCount => {
-            this.setState({ stepCount });
-          },
-          setSteps: steps => {
-            this.setState({ steps });
-          },
-          trueStepChanged: () => this.setState({ stepChanged: true }),
-          falseStepChanged: () => this.setState({ stepChanged: false }),
+          setStepCount: stepCount => this.setState({ stepCount }),
+          setSteps: stepss => this.setState({ steps: stepss }),
+          // trueStepChanged: () => this.setState({ stepChanged: true }),
+          // falseStepChanged: () => this.setState({ stepChanged: false }),
           toggleDisableSubsteps: () =>
             this.setState({ disableSubsteps: !disableSubsteps }),
           toggleDisableApply: () =>
@@ -53,7 +49,17 @@ class MyProvider extends React.Component {
             this.setState({
               generic: { ...generic, [currentStep]: currentStepContext }
             });
-          }
+          },
+          handleCheck: (currentStep, which) => {
+            const { steps } = this.state;
+            steps[currentStep].checkObj[which] = !steps[currentStep].checkObj[
+              which
+            ];
+            this.setState({
+              steps
+            });
+          },
+          clearGeneric: () => this.setState({ generic: {} })
         }}
       >
         {this.props.children}

@@ -3,21 +3,19 @@ import { MyContext } from "../App";
 
 export default class Init extends React.Component {
   state = {
-    stepCount: this.props.stepCount
+    stepCount: this.props.stepCount,
+    stepChanged: false
   };
 
   setStepCount = (context, value) => {
-    if (context.state.stepCount === value) {
-      context.falseStepChanged();
-    } else {
-      context.trueStepChanged();
-    }
-    this.setState({ stepCount: value });
+    let stepChanged = false;
+    if (context.state.stepCount !== value) stepChanged = true;
+    this.setState({ stepCount: value, stepChanged });
   };
 
   handleSetStep = context => {
-    const { stepCount } = this.state;
-    if (context.state.stepChanged) {
+    const { stepCount, stepChanged } = this.state;
+    if (stepChanged) {
       const steps = [];
       for (let i = 0; i < stepCount; i++) {
         steps.push({
@@ -28,10 +26,12 @@ export default class Init extends React.Component {
         });
       }
       console.log(steps);
+      context.clearGeneric();
       context.setSteps(steps);
     }
     context.setStepCount(stepCount);
     if (context.state.disableSubsteps === true) context.toggleDisableSubsteps();
+    this.setState({ stepChanged: false });
   };
 
   render() {
@@ -53,29 +53,32 @@ export default class Init extends React.Component {
         }}
       >
         <MyContext.Consumer>
-          {context => (
-            <React.Fragment>
+          {context => {
+            console.log(context);
+            return (
               <React.Fragment>
-                <label>
-                  Enter the number of steps in your form:
-                  <input
-                    type="text"
-                    value={this.state.stepCount}
-                    onChange={e => {
-                      this.setStepCount(context, e.target.value);
-                    }}
-                  />
-                </label>
+                <React.Fragment>
+                  <label>
+                    Enter the number of steps in your form:
+                    <input
+                      type="text"
+                      value={this.state.stepCount}
+                      onChange={e => {
+                        this.setStepCount(context, e.target.value);
+                      }}
+                    />
+                  </label>
+                </React.Fragment>
+                <button
+                  type="button"
+                  style={buttonStyle}
+                  onClick={() => this.handleSetStep(context)}
+                >
+                  Set Steps
+                </button>
               </React.Fragment>
-              <button
-                type="button"
-                style={buttonStyle}
-                onClick={() => this.handleSetStep(context)}
-              >
-                Set Steps
-              </button>
-            </React.Fragment>
-          )}
+            );
+          }}
         </MyContext.Consumer>
       </div>
     );

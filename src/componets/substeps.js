@@ -6,6 +6,13 @@ export default class Substeps extends React.Component {
     steps: this.props.steps
   };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.steps !== prevState.steps) {
+      return { steps: nextProps.steps };
+    }
+    return prevState;
+  }
+
   setAttribute = (index, value) => {
     const { steps } = this.state;
     steps[index].attributeString = value;
