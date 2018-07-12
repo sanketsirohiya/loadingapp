@@ -1,6 +1,6 @@
 // @flow
 import React from "react";
-import { MyContext } from "../componets/steps";
+import { MyContext } from "../App";
 
 export default class Vehicle extends React.Component {
   constructor(props) {

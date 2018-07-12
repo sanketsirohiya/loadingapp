@@ -1,6 +1,6 @@
 // @flow
 import React from "react";
-import { MyContext } from "../componets/steps";
+import { MyContext } from "../App";
 
 export default class Gps extends React.Component {
   onClickNext = (context, gpsContext) => {
