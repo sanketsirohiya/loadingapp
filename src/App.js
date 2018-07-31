@@ -3,6 +3,7 @@ import "./App.css";
 import Steps from "./componets/steps";
 import Init from "./componets/init";
 import Substeps from "./componets/substeps";
+import FinalSteps from "./componets/final";
 
 export const MyContext = React.createContext();
 
@@ -11,21 +12,40 @@ class MyProvider extends React.Component {
     super(props);
     this.state = {
       generic: {},
+      final: {},
       // gps: {},
       // vehicle: [],
       // driver: [],
       // trip: [],
+      finalCurrentStep: 0,
       currentStep: 0,
+      genericbuffer: [],
+      genInit: true,
+      buffer: {},
       stepCount: "",
       // stepChanged: false,
       steps: [],
       disableSubsteps: true,
-      disableApply: true
+      disableApply: true,
+      disableFinal: true,
+      finalStepError: 0
     };
   }
 
   render() {
-    const { currentStep, disableApply, disableSubsteps, generic } = this.state;
+    const {
+      currentStep,
+      disableApply,
+      disableSubsteps,
+      generic,
+      disableFinal,
+      finalCurrentStep,
+      final,
+      buffer,
+      genericbuffer,
+      steps,
+      finalStepError
+    } = this.state;
     return (
       <MyContext.Provider
         value={{
@@ -37,29 +57,93 @@ class MyProvider extends React.Component {
           // tripAdd: tripContext => this.setState({ trip: tripContext }),
           nextStep: () => this.setState({ currentStep: currentStep + 1 }),
           prevStep: () => this.setState({ currentStep: currentStep - 1 }),
+          finalNextStep: () =>
+            this.setState({ finalCurrentStep: finalCurrentStep + 1 }),
+          finalPrevStep: () =>
+            this.setState({ finalCurrentStep: finalCurrentStep - 1 }),
           setStepCount: stepCount => this.setState({ stepCount }),
-          setSteps: stepss => this.setState({ steps: stepss }),
+          setCurrentStep: currentStep => this.setState({ currentStep }),
+          setSteps: steps => this.setState({ steps }),
           // trueStepChanged: () => this.setState({ stepChanged: true }),
           // falseStepChanged: () => this.setState({ stepChanged: false }),
           toggleDisableSubsteps: () =>
             this.setState({ disableSubsteps: !disableSubsteps }),
           toggleDisableApply: () =>
             this.setState({ disableApply: !disableApply }),
-          currentStepAdd: (currentStepContext, currentStep) => {
+          toggleDisableFinal: () =>
+            this.setState({ disableFinal: !disableFinal }),
+          currentStepAdd: currentStep => {
             this.setState({
-              generic: { ...generic, [currentStep]: currentStepContext }
+              generic: { ...generic, [currentStep]: genericbuffer }
             });
           },
-          handleCheck: (currentStep, which) => {
-            const { steps } = this.state;
-            steps[currentStep].checkObj[which] = !steps[currentStep].checkObj[
-              which
-            ];
+          finalCurrentStepAdd: finalCurrentStep => {
             this.setState({
-              steps
+              final: { ...final, [steps[finalCurrentStep].title]: buffer }
             });
           },
-          clearGeneric: () => this.setState({ generic: {} })
+          genericBufferInit: () => {
+            const gen = genericbuffer;
+            gen.push({});
+            this.setState({
+              genericbuffer: gen
+            });
+          },
+          genericBufferInitSame: () => {
+            this.setState({
+              genericbuffer: generic[currentStep]
+            });
+          },
+          genericBufferAdd: (index, what, value) => {
+            const gen = genericbuffer;
+            gen[index][what] = value;
+            this.setState({
+              genericbuffer: gen
+            });
+          },
+          falseGenInit: () => {
+            this.setState({ genInit: false });
+          },
+          clearGenericBuffer: () => {
+            this.setState({ genInit: true, genericbuffer: [] });
+          },
+          bufferAdd: (key, value) => {
+            this.setState({ buffer: { ...buffer, [key]: value } });
+          },
+          incFinalStepError: () => {
+            this.setState({ finalStepError: finalStepError + 1 });
+          },
+          decFinalStepError: () => {
+            this.setState({ finalStepError: finalStepError - 1 });
+          },
+          resetFinalStepError: () => {
+            this.setState({ finalStepError: 0 });
+          },
+          // handleCheck: (currentStep, which) => {
+          //   const { steps } = this.state;
+          //   steps[currentStep].checkObj[which] = !steps[currentStep].checkObj[
+          //     which
+          //   ];
+          //   this.setState({
+          //     steps
+          //   });
+          // },
+          clearGeneric: () => this.setState({ generic: {} }),
+          clearBuffer: () => this.setState({ buffer: {} })
+          // clearCheck: () => {
+          //   const { steps, currentStep, generic } = this.state;
+          //   if (!generic[currentStep])
+          //     Object.keys(steps[currentStep].checkObj).map((key, index) => {
+          //       if (!generic[currentStep]) {
+          //         steps[currentStep].checkObj[key] = false;
+          //       } else if (!generic[currentStep][index]) {
+          //           steps[currentStep].checkObj[key] = false;
+          //         }
+          //     });
+          //   this.setState({
+          //     steps
+          //   });
+          // }
         }}
       >
         {this.props.children}
@@ -84,7 +168,9 @@ class App extends Component {
     if (context.state.disableApply === false) context.toggleDisableApply();
     if (context.state.disableSubsteps === false)
       context.toggleDisableSubsteps();
+    if (context.state.disableFinal === false) context.toggleDisableFinal();
     this.setState({ initConfig: !initConfig });
+    context.setCurrentStep(0);
   };
 
   render() {
@@ -138,7 +224,18 @@ class App extends Component {
         <MyContext.Consumer>
           {context => (
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <Steps steps={context.state.steps} />
+              {context.state.disableFinal ? (
+                <Steps
+                  steps={context.state.steps}
+                  currentStep={context.state.currentStep}
+                />
+              ) : (
+                <FinalSteps
+                  steps={context.state.steps}
+                  generic={context.state.generic}
+                  finalCurrentStep={context.state.finalCurrentStep}
+                />
+              )}
               <button
                 type="button"
                 style={buttonStyle}
@@ -155,3 +252,4 @@ class App extends Component {
 }
 
 export default App;
+// 867857039221622

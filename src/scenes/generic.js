@@ -1,21 +1,44 @@
 import React from "react";
 import { MyContext } from "../App";
+import MySelect from "../componets/myselect";
 
-export default class Driver extends React.Component {
-  constructor(props) {
-    super(props);
+export default class Generic extends React.Component {
+  state = {
+    currentStep: this.props.currentStep,
+    attributeArray: this.props.attributeArray
+  };
 
-    this.state = {};
-  }
-
-  onClickNext = (context, currentStepContext, currentStep) => {
-    context.currentStepAdd(currentStepContext, currentStep);
+  onClickNext = (e, context, currentStep) => {
+    e.preventDefault();
+    e.target.reset();
+    context.currentStepAdd(currentStep);
     context.nextStep();
+    context.clearGenericBuffer();
   };
 
   onClickPrev = context => {
-    if (context.state.currentStep > 0) context.prevStep();
+    if (context.state.currentStep > 0) {
+      context.prevStep();
+      context.clearGenericBuffer();
+    }
   };
+
+  onClickFinish = (context, currentStep) => {
+    context.currentStepAdd(currentStep);
+    context.toggleDisableFinal();
+    context.setCurrentStep(0);
+    context.clearGenericBuffer();
+  };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.currentStep !== prevState.currentStep) {
+      return {
+        currentStep: nextProps.currentStep,
+        attributeArray: nextProps.attributeArray
+      };
+    }
+    return prevState;
+  }
 
   render() {
     const buttonStyle = {
@@ -26,10 +49,9 @@ export default class Driver extends React.Component {
       margin: "0 auto",
       marginTop: 32
     };
-    let currentStepContext = [];
-    const { currentStep, title, checkObj } = this.props;
-    console.log(checkObj, currentStep, title);
 
+    const { currentStep, attributeArray } = this.state;
+    console.log("generic rerendered");
     return (
       <div
         style={{
@@ -40,141 +62,146 @@ export default class Driver extends React.Component {
       >
         <MyContext.Consumer>
           {context => {
-            if (!context.state.generic[currentStep]) {
-              for (let i = 0; i < Object.keys(checkObj).length; i++) {
-                currentStepContext.push({});
+            if (context.state.genInit) {
+              if (!context.state.generic[currentStep]) {
+                for (let i = 0; i < attributeArray.length; i++) {
+                  context.genericBufferInit();
+                }
+              } else {
+                context.genericBufferInitSame();
               }
-            } else {
-              currentStepContext = context.state.generic[currentStep];
+              context.falseGenInit();
             }
+            console.log(attributeArray, context.state.genericbuffer);
+
             return (
-              <React.Fragment>
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                  <label>
-                    Unique {title.charAt(0).toUpperCase() + title.slice(1)}{" "}
-                    Identifier :
-                  </label>
+              <form onSubmit={e => this.onClickNext(e, context, currentStep)}>
+                <React.Fragment>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    {attributeArray.map((key, index) => (
+                      <div
+                        style={{ display: "flex", flexDirection: "row" }}
+                        key={index}
+                      >
+                        <p>Select Identifier : </p>
+                        <MySelect
+                          val={
+                            context.state.generic[currentStep]
+                              ? context.state.generic[currentStep][index]
+                                  .what || ""
+                              : context.state.genericbuffer[index].what || ""
+                          }
+                          onChange={e =>
+                            context.genericBufferAdd(
+                              index,
+                              "what",
+                              e.target.value
+                            )
+                          }
+                          attributeArray={attributeArray}
+                          index={index}
+                        />
 
-                  {Object.keys(checkObj).map((key, index) => (
-                    <label key={index}>
-                      <input
-                        type="checkbox"
-                        value={title}
-                        checked={checkObj[key]}
-                        onChange={() => context.handleCheck(currentStep, key)}
-                      />
-                      {key.charAt(0).toUpperCase() + key.slice(1)}
-                    </label>
-                  ))}
-                </div>
+                        <p>Select type : </p>
+                        <MySelect
+                          val={
+                            context.state.generic[currentStep]
+                              ? context.state.generic[currentStep][index]
+                                  .type || ""
+                              : context.state.genericbuffer[index].type || ""
+                          }
+                          onChange={e =>
+                            context.genericBufferAdd(
+                              index,
+                              "type",
+                              e.target.value
+                            )
+                          }
+                          attributeArray={[
+                            "text",
+                            "number",
+                            "date",
+                            "time",
+                            "date_time",
+                            "autocomplete",
+                            "geocomplete"
+                          ]}
+                          index={index}
+                        />
 
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {Object.keys(checkObj).map((key, index) => {
-                    if (checkObj[key]) {
-                      return (
-                        <div
-                          style={{ display: "flex", flexDirection: "row" }}
-                          key={index}
-                        >
-                          <p>Select Identifier : </p>
-                          <select
-                            value={
-                              context.state.generic[currentStep] &&
-                              context.state.generic[currentStep][index]
-                                ? context.state.generic[currentStep][index].what
-                                : null
-                            }
-                            onChange={e => {
-                              currentStepContext[index].what = e.target.value;
-                            }}
-                          >
-                            <option selected value="" disabled>
-                              Select
-                            </option>
-                            {Object.keys(checkObj).map((key, index) => (
-                              <option value={key}>{key}</option>
-                            ))}
-                          </select>
+                        <p>Specify input name attribute : </p>
+                        <MySelect
+                          val={
+                            context.state.generic[currentStep]
+                              ? context.state.generic[currentStep][index]
+                                  .name || ""
+                              : context.state.genericbuffer[index].name || ""
+                          }
+                          onChange={e =>
+                            context.genericBufferAdd(
+                              index,
+                              "name",
+                              e.target.value
+                            )
+                          }
+                          attributeArray={attributeArray}
+                          index={index}
+                        />
 
-                          <p>Select type : </p>
-                          <select
-                            value={
-                              context.state.generic[currentStep] &&
-                              context.state.generic[currentStep][index]
-                                ? context.state.generic[currentStep][index].type
-                                : null
-                            }
-                            onChange={e => {
-                              currentStepContext[index].type = e.target.value;
-                            }}
-                          >
-                            <option selected value="" disabled>
-                              Select
-                            </option>
-                            <option value="text">text</option>
-                            <option value="number">number</option>
-                          </select>
-
-                          <p>Specify input name attribute : </p>
-                          <select
-                            value={
-                              context.state.generic[currentStep] &&
-                              context.state.generic[currentStep][index]
-                                ? context.state.generic[currentStep][index].name
-                                : null
-                            }
-                            onChange={e => {
-                              currentStepContext[index].name = e.target.value;
-                            }}
-                          >
-                            <option selected value="" disabled>
-                              Select
-                            </option>
-                            {Object.keys(checkObj).map((key, index) => (
-                              <option value={key}>{key}</option>
-                            ))}
-                          </select>
-
-                          <p>Specify Pattern for Validation : </p>
-                          <input
-                            type="text"
-                            value={
-                              context.state.generic[currentStep] &&
-                              context.state.generic[currentStep][index]
-                                ? context.state.generic[currentStep][index]
-                                    .pattern
-                                : null
-                            }
-                            onChange={e => {
-                              currentStepContext[index].pattern =
-                                e.target.value;
-                            }}
-                          />
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                  <button
-                    type="button"
-                    style={buttonStyle}
-                    onClick={() => this.onClickPrev(context)}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    style={buttonStyle}
-                    onClick={() =>
-                      this.onClickNext(context, currentStepContext, currentStep)
-                    }
-                  >
-                    Next
-                  </button>
-                </div>
-              </React.Fragment>
+                        <p>Specify Pattern/api (optional) : </p>
+                        <input
+                          type="text"
+                          defaultValue={
+                            context.state.generic[currentStep]
+                              ? context.state.generic[currentStep][index]
+                                  .pattern || ""
+                              : context.state.genericbuffer[index].pattern || ""
+                          }
+                          onChange={e =>
+                            context.genericBufferAdd(
+                              index,
+                              "pattern",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "row" }}>
+                    <button
+                      type="button"
+                      style={buttonStyle}
+                      onClick={() => this.onClickPrev(context)}
+                    >
+                      Previous
+                    </button>
+                    {currentStep + 1 < context.state.stepCount ? (
+                      <button
+                        type="submit"
+                        style={buttonStyle}
+                        // onClick={() =>
+                        //   this.onClickNext(
+                        //     context,
+                        //     currentStepContext,
+                        //     currentStep
+                        //   )
+                        // }
+                      >
+                        Next
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        style={buttonStyle}
+                        onClick={() => this.onClickFinish(context, currentStep)}
+                      >
+                        Finish
+                      </button>
+                    )}
+                  </div>
+                </React.Fragment>
+              </form>
             );
           }}
         </MyContext.Consumer>

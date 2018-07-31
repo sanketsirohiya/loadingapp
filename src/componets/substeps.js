@@ -20,6 +20,13 @@ export default class Substeps extends React.Component {
     this.setState({ steps });
   };
 
+  setLabel = (index, value) => {
+    const { steps } = this.state;
+    steps[index].labelString = value;
+    steps[index].labelArray = value.split(",");
+    this.setState({ steps });
+  };
+
   setTitle = (index, value) => {
     const { steps } = this.state;
     steps[index].title = value;
@@ -28,13 +35,6 @@ export default class Substeps extends React.Component {
 
   handleSave = context => {
     const { steps } = this.state;
-    const stepCount = context.state.stepCount;
-    for (let i = 0; i < stepCount; i++) {
-      for (let j = 0; j < steps[i].attributeArray.length; j++) {
-        const attr = steps[i].attributeArray[j];
-        steps[i].checkObj[attr] = false;
-      }
-    }
     context.setSteps(steps);
     if (context.state.disableApply === true) context.toggleDisableApply();
   };
@@ -61,12 +61,20 @@ export default class Substeps extends React.Component {
                       this.setTitle(index, e.target.value);
                     }}
                   />
-                  Enter attribute names (separated by commas):
+                  Enter attribute names (separated by comma):
                   <input
                     type="text"
                     value={this.state.steps[index].attributeString}
                     onChange={e => {
                       this.setAttribute(index, e.target.value);
+                    }}
+                  />
+                  Enter attribute labels (separated by comma):
+                  <input
+                    type="text"
+                    value={this.state.steps[index].labelString}
+                    onChange={e => {
+                      this.setLabel(index, e.target.value);
                     }}
                   />
                 </label>

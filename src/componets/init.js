@@ -22,7 +22,9 @@ export default class Init extends React.Component {
           title: "",
           attributeString: "",
           attributeArray: [],
-          checkObj: {}
+          // checkObj: {},
+          labelString: "",
+          labelArray: []
         });
       }
       console.log(steps);
